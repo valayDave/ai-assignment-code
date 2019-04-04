@@ -171,21 +171,21 @@ def sum_over(summing_variables,given_variables):
     print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
     return sum_acc
         
-print("############################## Solution For Q1)1 ##############################")
-ans11 = sum_over([A_keys,D_keys,F_keys],['e1','c1','h2','g3','b2'])
+# print("############################## Solution For Q1)1 ##############################")
+# ans11 = sum_over([A_keys,D_keys,F_keys],['e1','c1','h2','g3','b2'])
 
-ans12 = sum_over([A_keys,D_keys,F_keys,E_keys],['c1','h2','g3','b2'])
+# ans12 = sum_over([A_keys,D_keys,F_keys,E_keys],['c1','h2','g3','b2'])
 
-print('\n\n\n FINAL SUM For '+str(ans11/ans12)+'\n\n\n')
+# print('\n\n\n FINAL SUM For '+str(ans11/ans12)+'\n\n\n')
 
-print("##########################################################################################")
+# print("##########################################################################################")
 
-print("############################## Solution For Q1)2 ##############################")
-ans21 = sum_over([A_keys,E_keys,F_keys],['d1','c1','h3','g2','b4'])
+# print("############################## Solution For Q1)2 ##############################")
+# ans21 = sum_over([A_keys,E_keys,F_keys],['d1','c1','h3','g2','b4'])
 
-ans22 = sum_over([A_keys,D_keys,F_keys,E_keys],['c1','h3','g2','b4'])
+# ans22 = sum_over([A_keys,D_keys,F_keys,E_keys],['c1','h3','g2','b4'])
 
-print('\n\n\n FINAL SUM For '+str(ans21/ans22)+'\n\n\n')
+# print('\n\n\n FINAL SUM For '+str(ans21/ans22)+'\n\n\n')
 
 print("##########################################################################################")
 tables = [table6,table7,table8] + tables # [table6,table7,table8,table1,table2,table5,table3,table4]
@@ -208,22 +208,10 @@ def get_range_index(value,range_table):
     print("It Should Never Reach Here!")
     return index
 
-samples = [] # [[Rv_Domain_index],[Rv_Domain_index]] : Each Array is an RV.
-for table in tables[:3]:
-    #TODO : Handle Priors
-   # print(table)
-    random_distribution = numpy.random.uniform(0,1,num_samples)
-    samples.append([get_range_index(particle,table)for particle in random_distribution])
-# For Each Random Varaiable pick the index of the sample
-#random_distribution_D = numpy.random.uniform(0,1,num_samples)
-
-#samples_of_priors = samples[:3] --> Contains for A, B , C
-#prior_symbols = ['a','b','c']
-#print(final_tables[0])
-
-
 def extract_samples(available_probability_distribution,some_random_distribution,prior_symbols,samples_of_priors,probability_index_map,random_var):
     return_samples = []
+    print("--------------------------------------------------------")
+    print("Samples For Random Variable :",random_var)
     for i in range(0,some_random_distribution.__len__()):
         current_samples = [] #[A,B,C,D,..]
         for sample in samples_of_priors:
@@ -241,22 +229,80 @@ def extract_samples(available_probability_distribution,some_random_distribution,
         chosen_probability_distribution = available_probability_distribution[index_in_distribution]
         #print("Index Of Probability: ",index_in_distribution,comparing_map)
         #print("With Distribution :",chosen_probability_distribution)
+
         sampled_value = get_range_index(some_random_distribution[i],chosen_probability_distribution)
+        print("Given :",comparing_map," With Probability Distribution : ",chosen_probability_distribution,"With Value Of random Sample At ",round(some_random_distribution[i],3)," Chose Value :",random_var.lower()+str(sampled_value+1))
         #print("Index Of The RV : ",random_var,sampled_value,comparing_map,some_random_distribution[i])
         return_samples.append(sampled_value)
     return return_samples
 
     #TODO : Handle
 
-A_samples = [get_range_index(particle,final_tables[0]) for particle in random_distribution]
-B_samples = [get_range_index(particle,final_tables[1]) for particle in random_distribution]
-C_samples = [get_range_index(particle,final_tables[2]) for particle in random_distribution]
-D_samples = extract_samples(final_tables[3],numpy.random.uniform(0,1,num_samples),['a','b','c'],samples[0:3],D_map,'D')
-E_samples = extract_samples(final_tables[4],numpy.random.uniform(0,1,num_samples),['a','b','c'],samples[0:3],E_map,'E')
+def generate_prior_samples(random_distribution,prob_distribution,random_var):
+    print("--------------------------------------------------------")
+    print("Samples For Random Variable :",random_var)
+    final_vars = []
+    for particle in random_distribution:
+        sampled_value = get_range_index(particle,prob_distribution)
+        print("With Probability Distribution : ",prob_distribution," With Value Of random Sample At ",round(particle,3)," Chose Value :",random_var.lower()+str(sampled_value+1))
+        final_vars.append(sampled_value)
+    return final_vars
+    
+print("\n Generating Samples For PRIORS \n")
+A_samples = generate_prior_samples(numpy.random.uniform(0,1,num_samples),final_tables[0],'A') #[get_range_index(particle,final_tables[0]) for particle in random_distribution]
+B_samples = generate_prior_samples(numpy.random.uniform(0,1,num_samples),final_tables[1],'B')
+C_samples = generate_prior_samples(numpy.random.uniform(0,1,num_samples),final_tables[2],'C')
+print("\n Generating Samples For RV's which are Conditionals \n ")
+D_samples = extract_samples(final_tables[3],numpy.random.uniform(0,1,num_samples),['a','b','c'],[A_samples,B_samples,C_samples],D_map,'D')
+E_samples = extract_samples(final_tables[4],numpy.random.uniform(0,1,num_samples),['a','b','c'],[A_samples,B_samples,C_samples],E_map,'E')
 F_samples = extract_samples(final_tables[5],numpy.random.uniform(0,1,num_samples),['d','e'],[D_samples,E_samples],F_map,'F')
 G_samples = extract_samples(final_tables[6],numpy.random.uniform(0,1,num_samples),['d','e'],[D_samples,E_samples],G_map,'G')
 H_samples = extract_samples(final_tables[7],numpy.random.uniform(0,1,num_samples),['d','e'],[D_samples,E_samples],H_map,'H')
-result = list(map(lambda x : 'a'+str(x+1),A_samples))
-#print(result)
+result = [A_samples,B_samples,C_samples,D_samples,E_samples,F_samples,G_samples,H_samples]
+start_var = 'a'
+samples_by_domain = []#[list(map(lambda x : start_var+str(x+1),samples)) for samples in result]
+for samples in result:
+    samples_by_domain.append(list(map(lambda x : start_var+str(x+1),samples)))
+    start_var = chr(ord(start_var)+1)
 
+# result = list(map(lambda x : 'a'+str(x+1),F_samples))
+def find_probability_from_sample_distribution(sample_distribution,samples_keys):
+    sample_prob = {}
+    for key in samples_keys:
+        sample_prob[key] = float(sample_distribution.count(key)/sample_distribution.__len__())
+    return sample_prob
 
+samples_by_test_order = numpy.column_stack(tuple(samples_by_domain))
+
+final_sample_probability_distribution = []
+
+print("\n\nFinal Result Of Sampling : ")
+for sample in samples_by_test_order:
+    print(sample)
+print('\n')
+
+#P(x1,...,xm) ≈ NPS(x1,...,xm)/N .
+
+def get_join_prob_from_sample_test(given_samples_by_test_order,givens):
+    found_matches = []
+    print("Join Probability Distribution Over ",",".join(givens))
+    print("\tEvents Matched : \n",)    
+    for individual_samples_test in given_samples_by_test_order:
+        #print(intersection(list(givens),individual_samples_test),givens)
+        if intersection(list(givens),individual_samples_test) == givens:
+            one_merge = True
+            #TODO: Check For the Key that matched in the Distribution
+            print('\t'+','.join(individual_samples_test))    
+            found_matches.append(individual_samples_test)
+    prob_distribution = float(found_matches.__len__()/given_samples_by_test_order.__len__())
+    print("\n\tJoin Probability Distribution Over ",",".join(givens)," = ",round(prob_distribution,3),'\n')
+    return prob_distribution
+
+print("Join Probability Distribution For Sampled Events = (Number of Matching events for the given values / Total Number Of Events)\n")
+
+p1 = get_join_prob_from_sample_test(samples_by_test_order,['e1','f2','h2','a2'])
+p2 = get_join_prob_from_sample_test(samples_by_test_order,['f2','h2','a2'])
+
+print("P(e1|f2,h2,a2) = P("+','.join(['e1','f2','h2','a2'])+') / P('+','.join(['f2','h2','a2'])+')')
+if p2!=0:
+    print("P(e1|f2,h2,a2) = ",str(p1/p2) )
